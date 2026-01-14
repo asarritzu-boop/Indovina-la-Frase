@@ -34,10 +34,12 @@
         #GAME { display: none; flex-direction: column; height: 100%; width: 100vw; }
 
         #UI_TOP { 
-            flex-shrink: 0; padding: 10px; display: flex; justify-content: center; gap: 5px; background: rgba(0,0,0,0.4);
+            flex-shrink: 0; padding: 10px; display: flex; justify-content: center; align-items: center; gap: 5px; background: rgba(0,0,0,0.4);
         }
 
         #UI_TOP button { padding: 8px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; font-size: 13px; }
+
+        #ERROR_COUNT { color: #ff4444; font-weight: bold; margin-left: 10px; font-size: 14px; text-shadow: 0 0 5px #f00; }
 
         #CONTENITORE_BOARD {
             flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-sizing: border-box;
@@ -54,7 +56,7 @@
             background: white; border: 2px solid var(--neon-1); margin: 2px;
             display: inline-block; font-weight: 900; color: transparent;
             border-radius: 4px; text-align: center;
-            transition: border 0.3s, box-shadow 0.3s;
+            transition: border 0.3s, box-shadow 0.3s, color 0.3s;
         }
 
         #KEYS {
@@ -68,9 +70,9 @@
             border-radius: 5px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
         }
 
-        #KEYS button:disabled { opacity: 0.1; }
+        #KEYS button:disabled { opacity: 0.1; cursor: default; }
 
-        #START { padding-top: 50px; text-align: center; }
+        #START { padding-top: 30px; text-align: center; }
 
         #THEME_BTN {
             display: inline-block; margin-top: 15px; padding: 12px 25px;
@@ -84,10 +86,12 @@
         }
 
         #APK_LINK {
-            display: inline-block; margin-top: 25px; padding: 10px 20px;
+            display: inline-block; margin-top: 40px; padding: 12px 25px;
             background: transparent; color: var(--neon-1); border: 1px solid var(--neon-1);
-            border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; opacity: 0.8;
+            border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 14px; 
+            text-transform: uppercase; transition: 0.3s; opacity: 0.7;
         }
+        #APK_LINK:hover { opacity: 1; background: rgba(0,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -110,10 +114,9 @@
                 <button id="THEME_BTN" onclick="cambiaTema()">🎨 TEMA: <span id="THEME_NAME">Cyber</span></button>
             </div>
         </div>
-        
+
         <div id="APK_UI">
-            <br>
-            <a href="CyberPuzzle.apk" id="APK_LINK" download="CyberPuzzle.apk" type="application/vnd.android.package-archive">Scarica APK</a>
+            <a href="CyberPuzzle.apk" id="APK_LINK" download="CyberPuzzle.apk">Scarica APK</a>
         </div>
     </div>
 
@@ -122,7 +125,8 @@
             <button onclick="location.reload()" style="background:#444; color:white;">RESET</button>
             <button onclick="toggleFS()" style="background:var(--neon-1); color:#000;">FULL SCREEN</button>
             <button id="BTN_KB" onclick="toggleKeyboard()" style="background:#0f0; color:#000;">TASTIERA OFF</button>
-            <button onclick="rivelaFrase()" style="background:var(--neon-2); color:#fff;">RIVELA</button>
+            <button id="BTN_RIVELA" onclick="rivelaFrase()" style="background:var(--neon-2); color:#fff;">RIVELA</button>
+            <div id="ERROR_COUNT">ERRORI: 0/5</div>
         </div>
         <div id="CONTENITORE_BOARD"><div id="BOARD"></div></div>
         <div id="KEYS"></div>
@@ -130,6 +134,9 @@
 
     <script>
         let fraseAttuale = "";
+        let isSfida = false;
+        let errori = 0;
+        const MAX_ERRORI = 5;
         const mapAccenti = {'À':'A','Á':'A','È':'E','É':'E','Ì':'I','Í':'I','Ò':'O','Ó':'O','Ù':'U','Ú':'U'};
 
         const temi = [
@@ -162,6 +169,7 @@
             const fraseLink = urlParams.get('s');
             if(fraseLink) {
                 try {
+                    isSfida = true;
                     document.getElementById('INPUT').value = decodeURIComponent(escape(atob(fraseLink)));
                     avviaGioco();
                 } catch(e) { console.error("Errore decodifica frase"); }
@@ -171,13 +179,12 @@
         function condividiSfida() {
             const f = document.getElementById('INPUT').value.trim();
             if(!f) return alert("Scrivi una frase prima di generare la sfida!");
-            
             const base64 = btoa(unescape(encodeURIComponent(f)));
             const linkSfida = window.location.origin + window.location.pathname + "?s=" + base64;
             
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(linkSfida).then(() => {
-                    alert("Link sfida copiato negli appunti!");
+                    alert("Link sfida copiato! Invialo a un amico.");
                 }).catch(() => fallbackCopy(linkSfida));
             } else {
                 fallbackCopy(linkSfida);
@@ -193,7 +200,7 @@
                 document.execCommand('copy');
                 alert("Link sfida copiato!");
             } catch (err) {
-                prompt("Copia il link qui sotto:", text);
+                prompt("Copia il link:", text);
             }
             document.body.removeChild(textArea);
         }
@@ -213,11 +220,25 @@
         function avviaGioco() {
             fraseAttuale = document.getElementById('INPUT').value.toUpperCase().trim();
             if(!fraseAttuale) return;
+            
+            errori = 0;
+            aggiornaContatoreErrori();
+
+            if(isSfida) {
+                document.getElementById('BTN_RIVELA').style.display = 'none';
+            } else {
+                document.getElementById('BTN_RIVELA').style.display = 'inline-block';
+            }
+
             document.getElementById('START').style.display = 'none';
             document.getElementById('GAME').style.display = 'flex';
             costruisciBoard();
             costruisciTastiera();
             setTimeout(ridimensionaBoard, 100);
+        }
+
+        function aggiornaContatoreErrori() {
+            document.getElementById('ERROR_COUNT').innerText = `ERRORI: ${errori}/${MAX_ERRORI}`;
         }
 
         function costruisciBoard() {
@@ -270,15 +291,43 @@
                 btn.onclick = () => {
                     btn.disabled = true;
                     btn.style.opacity = "0.1";
-                    const n2 = getComputedStyle(document.documentElement).getPropertyValue('--neon-2');
-                    document.querySelectorAll(`.C[data-l="${let}"]`).forEach(bx => {
-                        bx.style.color = 'black';
-                        bx.style.borderColor = n2;
-                        bx.style.boxShadow = `0 0 10px ${n2}`;
-                    });
+                    
+                    const occorrenze = document.querySelectorAll(`.C[data-l="${let}"]`);
+                    
+                    if(occorrenze.length > 0) {
+                        const n2 = getComputedStyle(document.documentElement).getPropertyValue('--neon-2');
+                        occorrenze.forEach(bx => {
+                            bx.style.color = 'black';
+                            bx.style.borderColor = n2;
+                            bx.style.boxShadow = `0 0 10px ${n2}`;
+                        });
+                        controllaVittoria();
+                    } else {
+                        errori++;
+                        aggiornaContatoreErrori();
+                        if(errori >= MAX_ERRORI) {
+                            rivelaFrase();
+                            setTimeout(() => alert("HAI PERSO!"), 100);
+                            disabilitaTastiera();
+                        }
+                    }
                 };
                 k.appendChild(btn);
             });
+        }
+
+        function disabilitaTastiera() {
+            document.querySelectorAll('#KEYS button').forEach(b => b.disabled = true);
+        }
+
+        function controllaVittoria() {
+            const tutte = document.querySelectorAll('.C');
+            let vinte = 0;
+            tutte.forEach(c => { if(c.style.color === 'black') vinte++; });
+            if(vinte === tutte.length && tutte.length > 0) {
+                setTimeout(() => alert("COMPLIMENTI! HAI VINTO!"), 200);
+                disabilitaTastiera();
+            }
         }
 
         function toggleKeyboard() {
@@ -300,6 +349,7 @@
             document.querySelectorAll('.C').forEach(x => {
                 x.style.color = 'black';
                 x.style.borderColor = n2;
+                x.style.boxShadow = `0 0 10px ${n2}`;
             });
         }
 
