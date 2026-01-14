@@ -1,672 +1,322 @@
 <!DOCTYPE html>
-
 <html lang="it">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
     <title>Cyber Puzzle Pro</title>
 
-
-
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23000d1a%22/&gt;&lt;rect x=%225%22 y=%225%22 width=%2290%22 height=%2290%22 rx=%2218%22 fill=%22none%22 stroke=%22%2300ffff%22 stroke-width=%228%22/&gt;&lt;text x=%2250%%22 y=%2270%%22 font-family=%22Arial%22 font-size=%2260%22 font-weight=%22bold%22 fill=%22%23ff00ff%22 text-anchor=%22middle%22&gt;CP&lt;/text&gt;&lt;/svg&gt;">
-
     <link rel="apple-touch-icon" href="data:image/svg+xml,&lt;svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22&gt;&lt;rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23000d1a%22/&gt;&lt;rect x=%225%22 y=%225%22 width=%2290%22 height=%2290%22 rx=%2218%22 fill=%22none%22 stroke=%22%2300ffff%22 stroke-width=%228%22/&gt;&lt;text x=%2250%%22 y=%2270%%22 font-family=%22Arial%22 font-size=%2260%22 font-weight=%22bold%22 fill=%22%23ff00ff%22 text-anchor=%22middle%22&gt;CP&lt;/text&gt;&lt;/svg&gt;">
-
     <meta name="theme-color" content="#000d1a">
 
-
-
     <style>
-
         :root { 
-
             --box-dim: 45px; 
-
             --font-dim: 28px; 
-
             --bg-grad-1: #003399;
-
             --bg-grad-2: #00050a;
-
             --neon-1: #0ff;
-
             --neon-2: #f0f;
-
             --key-bg: #002266;
-
         }
-
         
-
         body, html { 
-
             margin: 0; padding: 0; 
-
             height: 100%; width: 100%; 
-
             height: 100svh; 
-
             overflow: hidden; 
-
             background: var(--bg-grad-2); 
-
             background-image: radial-gradient(circle, var(--bg-grad-1) 0%, var(--bg-grad-2) 100%);
-
             color: var(--neon-1); font-family: sans-serif;
-
             transition: background 0.5s ease;
-
         }
 
-
-
-        #GAME { 
-
-            display: none; 
-
-            flex-direction: column; 
-
-            height: 100%; 
-
-            width: 100vw; 
-
-        }
-
-
+        #GAME { display: none; flex-direction: column; height: 100%; width: 100vw; }
 
         #UI_TOP { 
-
-            flex-shrink: 0; 
-
-            padding: 10px; 
-
-            display: flex; 
-
-            justify-content: center; 
-
-            gap: 5px;
-
-            background: rgba(0,0,0,0.4);
-
+            flex-shrink: 0; padding: 10px; display: flex; justify-content: center; gap: 5px; background: rgba(0,0,0,0.4);
         }
 
-
-
-        #UI_TOP button {
-
-            padding: 8px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; font-size: 13px;
-
-        }
-
-
+        #UI_TOP button { padding: 8px 10px; border-radius: 5px; cursor: pointer; font-weight: bold; border: none; font-size: 13px; }
 
         #CONTENITORE_BOARD {
-
-            flex-grow: 1; 
-
-            display: flex; 
-
-            align-items: center; 
-
-            justify-content: center;
-
-            overflow: hidden; 
-
-            padding: 10px;
-
-            box-sizing: border-box;
-
+            flex-grow: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 10px; box-sizing: border-box;
         }
 
-
-
-        #BOARD {
-
-            display: flex; flex-wrap: wrap; justify-content: center; align-content: center;
-
-            width: 100%; max-height: 100%;
-
-        }
-
-
+        #BOARD { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; width: 100%; max-height: 100%; }
 
         .word-group { display: flex; margin: 5px 10px; }
 
-
-
         .C {
-
             width: var(--box-dim); height: calc(var(--box-dim) * 1.3);
-
             line-height: calc(var(--box-dim) * 1.3);
-
             font-size: var(--font-dim);
-
             background: white; border: 2px solid var(--neon-1); margin: 2px;
-
             display: inline-block; font-weight: 900; color: transparent;
-
             border-radius: 4px; text-align: center;
-
             transition: border 0.3s, box-shadow 0.3s;
-
         }
-
-
 
         #KEYS {
-
-            flex-shrink: 0; 
-
-            display: flex; 
-
-            flex-wrap: wrap; 
-
-            justify-content: center;
-
-            background: rgba(0,0,0,0.8); 
-
-            padding: 15px 5px; 
-
-            border-top: 2px solid var(--neon-2);
-
-            gap: 4px;
-
+            flex-shrink: 0; display: flex; flex-wrap: wrap; justify-content: center;
+            background: rgba(0,0,0,0.8); padding: 15px 5px; border-top: 2px solid var(--neon-2); gap: 4px;
         }
-
-
 
         #KEYS button {
-
-            width: calc(100% / 10 - 6px); 
-
-            min-width: 30px;
-
-            max-width: 50px;
-
-            height: 45px; 
-
+            width: calc(100% / 10 - 6px); min-width: 30px; max-width: 50px; height: 45px; 
             background: var(--key-bg); color: var(--neon-1); border: 1px solid var(--neon-1);
-
-            border-radius: 5px; cursor: pointer; font-size: 18px;
-
-            display: flex; align-items: center; justify-content: center;
-
+            border-radius: 5px; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
         }
-
-
 
         #KEYS button:disabled { opacity: 0.1; }
 
-
-
         #START { padding-top: 50px; text-align: center; }
 
-
-
         #THEME_BTN {
-
-            display: inline-block;
-
-            margin-top: 10px;
-
-            padding: 12px 25px;
-
-            background: rgba(255,255,255,0.1);
-
-            color: #fff;
-
-            border: 1px solid var(--neon-1);
-
-            border-radius: 30px;
-
-            cursor: pointer;
-
-            font-size: 15px;
-
-            font-weight: bold;
-
-            text-transform: uppercase;
-
-            transition: 0.3s;
-
+            display: inline-block; margin-top: 15px; padding: 12px 25px;
+            background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--neon-1);
+            border-radius: 30px; cursor: pointer; font-size: 14px; font-weight: bold; text-transform: uppercase; transition: 0.3s;
         }
 
-
+        #SHARE_BTN {
+            padding: 15px 20px; background: var(--neon-2); color: white; border: none; 
+            border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: 0.3s;
+        }
 
         #APK_LINK {
-
-            display: inline-block;
-
-            margin-top: 20px;
-
-            padding: 10px 20px;
-
-            background: transparent;
-
-            color: var(--neon-1);
-
-            border: 1px solid var(--neon-1);
-
-            border-radius: 50px;
-
-            text-decoration: none;
-
-            font-weight: bold;
-
-            font-size: 14px;
-
-            text-transform: uppercase;
-
-            transition: 0.3s;
-
-            opacity: 0.8;
-
+            display: inline-block; margin-top: 25px; padding: 10px 20px;
+            background: transparent; color: var(--neon-1); border: 1px solid var(--neon-1);
+            border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: 0.3s; opacity: 0.8;
         }
-
-        #APK_LINK:hover { opacity: 1; text-shadow: 0 0 10px var(--neon-1); }
-
     </style>
-
 </head>
-
 <body>
 
-
-
     <div id="START">
-
         <h1 id="TITOLO" style="color:var(--neon-2); text-shadow:0 0 20px var(--neon-2); font-size:35px;">CYBER PUZZLE</h1>
-
         <div style="background:rgba(0,0,0,0.5); padding:30px; display:inline-block; border:2px solid var(--neon-1); border-radius:20px; width:85%;">
-
             
-
             <input type="text" id="INPUT" placeholder="SCRIVI LA FRASE..." 
-
                 onkeypress="if(event.key==='Enter') avviaGioco()" 
-
-                onfocus="nascondiExtra()" 
-
-                onblur="mostraExtra()"
-
-                style="padding:15px; width:90%; font-size:20px; border:3px solid var(--neon-1); background:#000; color:#fff; text-align:center; margin-bottom:20px; border-radius:10px;">
-
-            <br>
-
-            <button onclick="avviaGioco()" style="padding:20px 40px; background:var(--neon-1); color:#000; font-size:24px; font-weight:bold; border:none; border-radius:10px; cursor:pointer;">GIOCA</button>
-
-            <br>
-
+                onfocus="nascondiExtra()" onblur="mostraExtra()"
+                style="padding:15px; width:90%; font-size:20px; border:3px solid var(--neon-1); background:#000; color:#fff; text-align:center; border-radius:10px; margin-bottom: 15px;">
             
-
-            <div id="THEME_UI">
-
-                <button id="THEME_BTN" onclick="cambiaTema()">🎨 TEMA: <span id="THEME_NAME">Cyber</span></button>
-
+            <div style="display: flex; justify-content: center; gap: 10px; width: 100%;">
+                <button onclick="avviaGioco()" style="padding:15px 30px; background:var(--neon-1); color:#000; font-size:22px; font-weight:bold; border:none; border-radius:10px; cursor:pointer; flex-grow: 1;">GIOCA</button>
+                <button id="SHARE_BTN" onclick="condividiSfida()">🔗 SFIDA</button>
             </div>
-
+            
+            <div id="THEME_UI">
+                <button id="THEME_BTN" onclick="cambiaTema()">🎨 TEMA: <span id="THEME_NAME">Cyber</span></button>
+            </div>
         </div>
-
         
-
         <div id="APK_UI">
-
             <br>
-
-            <a href="CyberPuzzle.apk" id="APK_LINK" download>Scarica APK</a>
-
+            <a href="CyberPuzzle.apk" id="APK_LINK" download="CyberPuzzle.apk" type="application/vnd.android.package-archive">Scarica APK</a>
         </div>
-
     </div>
-
-
 
     <div id="GAME">
-
         <div id="UI_TOP">
-
             <button onclick="location.reload()" style="background:#444; color:white;">RESET</button>
-
             <button onclick="toggleFS()" style="background:var(--neon-1); color:#000;">FULL SCREEN</button>
-
             <button id="BTN_KB" onclick="toggleKeyboard()" style="background:#0f0; color:#000;">TASTIERA OFF</button>
-
             <button onclick="rivelaFrase()" style="background:var(--neon-2); color:#fff;">RIVELA</button>
-
         </div>
-
-        
-
-        <div id="CONTENITORE_BOARD">
-
-            <div id="BOARD"></div>
-
-        </div>
-
-
-
+        <div id="CONTENITORE_BOARD"><div id="BOARD"></div></div>
         <div id="KEYS"></div>
-
     </div>
 
-
-
     <script>
-
         let fraseAttuale = "";
-
         const mapAccenti = {'À':'A','Á':'A','È':'E','É':'E','Ì':'I','Í':'I','Ò':'O','Ó':'O','Ù':'U','Ú':'U'};
 
-
+        const temi = [
+            { nome: "Cyber", g1: "#003399", g2: "#00050a", n1: "#0ff", n2: "#f0f", k: "#002266" },
+            { nome: "Matrix", g1: "#003300", g2: "#000000", n1: "#0f0", n2: "#0a0", k: "#001a00" },
+            { nome: "Volcano", g1: "#660000", g2: "#1a0000", n1: "#ff0", n2: "#f40", k: "#330000" },
+            { nome: "Deep Sea", g1: "#001a33", g2: "#000010", n1: "#00f", n2: "#0ff", k: "#000d1a" },
+            { nome: "Gold", g1: "#443300", g2: "#110000", n1: "#fc0", n2: "#fff", k: "#221100" },
+            { nome: "Synthwave", g1: "#2b1055", g2: "#191970", n1: "#ff00ff", n2: "#00ffff", k: "#4b0082" },
+            { nome: "Forest", g1: "#1b3022", g2: "#0b140e", n1: "#a3cfbb", n2: "#2e7d32", k: "#1e3a2b" },
+            { nome: "Midnight", g1: "#0f0c29", g2: "#000000", n1: "#24243e", n2: "#6a11cb", k: "#1a1a2e" },
+            { nome: "Sakura", g1: "#ffc1cc", g2: "#4a0e0e", n1: "#fff", n2: "#ff69b4", k: "#800000" },
+            { nome: "High Contrast", g1: "#000", g2: "#000", n1: "#fff", n2: "#fff", k: "#333" },
+            { nome: "Oceania", g1: "#005f73", g2: "#001219", n1: "#94d2bd", n2: "#ee9b00", k: "#0a9396" },
+            { nome: "Vampire", g1: "#310e0e", g2: "#000000", n1: "#880808", n2: "#ffffff", k: "#4a0404" },
+            { nome: "Toxic", g1: "#1a2e05", g2: "#050a00", n1: "#adff2f", n2: "#32cd32", k: "#223300" },
+            { nome: "Electric", g1: "#0000ff", g2: "#000033", n1: "#ffffff", n2: "#ffff00", k: "#000066" },
+            { nome: "Desert", g1: "#6b4226", g2: "#2b1a0e", n1: "#f4a460", n2: "#ffdb58", k: "#3e2723" },
+            { nome: "Cyberpunk 2", g1: "#f3ec19", g2: "#000000", n1: "#000000", n2: "#00efff", k: "#222" },
+            { nome: "Nordic", g1: "#2e3440", g2: "#242933", n1: "#88c0d0", n2: "#eceff4", k: "#3b4252" },
+            { nome: "Neon Sunset", g1: "#ff0055", g2: "#2d0036", n1: "#feb300", n2: "#ff0055", k: "#3d004d" },
+            { nome: "Space", g1: "#1a1a2e", g2: "#000000", n1: "#e94560", n2: "#0f3460", k: "#16213e" },
+            { nome: "Retro", g1: "#404040", g2: "#1a1a1a", n1: "#00ff41", n2: "#00ff41", k: "#222" }
+        ];
 
         let temaIndex = 0;
 
-        const temi = [
+        window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const fraseLink = urlParams.get('s');
+            if(fraseLink) {
+                try {
+                    document.getElementById('INPUT').value = decodeURIComponent(escape(atob(fraseLink)));
+                    avviaGioco();
+                } catch(e) { console.error("Errore decodifica frase"); }
+            }
+        };
 
-            { nome: "Cyber", g1: "#003399", g2: "#00050a", n1: "#0ff", n2: "#f0f", k: "#002266" },
+        function condividiSfida() {
+            const f = document.getElementById('INPUT').value.trim();
+            if(!f) return alert("Scrivi una frase prima di generare la sfida!");
+            
+            const base64 = btoa(unescape(encodeURIComponent(f)));
+            const linkSfida = window.location.origin + window.location.pathname + "?s=" + base64;
+            
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(linkSfida).then(() => {
+                    alert("Link sfida copiato negli appunti!");
+                }).catch(() => fallbackCopy(linkSfida));
+            } else {
+                fallbackCopy(linkSfida);
+            }
+        }
 
-            { nome: "Matrix", g1: "#003300", g2: "#000000", n1: "#0f0", n2: "#0a0", k: "#001a00" },
-
-            { nome: "Volcano", g1: "#660000", g2: "#1a0000", n1: "#ff0", n2: "#f40", k: "#330000" },
-
-            { nome: "Deep Sea", g1: "#001a33", g2: "#000010", n1: "#00f", n2: "#0ff", k: "#000d1a" },
-
-            { nome: "Gold", g1: "#443300", g2: "#110000", n1: "#fc0", n2: "#fff", k: "#221100" },
-
-            { nome: "Synthwave", g1: "#2b1055", g2: "#191970", n1: "#ff00ff", n2: "#00ffff", k: "#4b0082" },
-
-            { nome: "Forest", g1: "#1b3022", g2: "#0b140e", n1: "#a3cfbb", n2: "#2e7d32", k: "#1e3a2b" },
-
-            { nome: "Midnight", g1: "#0f0c29", g2: "#000000", n1: "#24243e", n2: "#6a11cb", k: "#1a1a2e" },
-
-            { nome: "Sakura", g1: "#ffc1cc", g2: "#4a0e0e", n1: "#fff", n2: "#ff69b4", k: "#800000" },
-
-            { nome: "High Contrast", g1: "#000", g2: "#000", n1: "#fff", n2: "#fff", k: "#333" },
-
-            { nome: "Oceania", g1: "#005f73", g2: "#001219", n1: "#94d2bd", n2: "#ee9b00", k: "#0a9396" },
-
-            { nome: "Vampire", g1: "#310e0e", g2: "#000000", n1: "#880808", n2: "#ffffff", k: "#4a0404" },
-
-            { nome: "Toxic", g1: "#1a2e05", g2: "#050a00", n1: "#adff2f", n2: "#32cd32", k: "#223300" },
-
-            { nome: "Electric", g1: "#0000ff", g2: "#000033", n1: "#ffffff", n2: "#ffff00", k: "#000066" },
-
-            { nome: "Desert", g1: "#6b4226", g2: "#2b1a0e", n1: "#f4a460", n2: "#ffdb58", k: "#3e2723" },
-
-            { nome: "Cyberpunk 2", g1: "#f3ec19", g2: "#000000", n1: "#000000", n2: "#00efff", k: "#222" },
-
-            { nome: "Nordic", g1: "#2e3440", g2: "#242933", n1: "#88c0d0", n2: "#eceff4", k: "#3b4252" },
-
-            { nome: "Neon Sunset", g1: "#ff0055", g2: "#2d0036", n1: "#feb300", n2: "#ff0055", k: "#3d004d" },
-
-            { nome: "Space", g1: "#1a1a2e", g2: "#000000", n1: "#e94560", n2: "#0f3460", k: "#16213e" },
-
-            { nome: "Retro", g1: "#404040", g2: "#1a1a1a", n1: "#00ff41", n2: "#00ff41", k: "#222" }
-
-        ];
-
-
+        function fallbackCopy(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert("Link sfida copiato!");
+            } catch (err) {
+                prompt("Copia il link qui sotto:", text);
+            }
+            document.body.removeChild(textArea);
+        }
 
         function cambiaTema() {
-
             temaIndex = (temaIndex + 1) % temi.length;
-
             const t = temi[temaIndex];
-
             const root = document.documentElement;
-
             root.style.setProperty('--bg-grad-1', t.g1);
-
             root.style.setProperty('--bg-grad-2', t.g2);
-
             root.style.setProperty('--neon-1', t.n1);
-
             root.style.setProperty('--neon-2', t.n2);
-
             root.style.setProperty('--key-bg', t.k);
-
             document.getElementById('THEME_NAME').innerText = t.nome;
-
         }
-
-
-
-        function nascondiExtra() {
-
-            document.getElementById('THEME_UI').style.display = 'none';
-
-            document.getElementById('APK_UI').style.display = 'none';
-
-        }
-
-        function mostraExtra() {
-
-            document.getElementById('THEME_UI').style.display = 'block';
-
-            document.getElementById('APK_UI').style.display = 'block';
-
-        }
-
-
 
         function avviaGioco() {
-
             fraseAttuale = document.getElementById('INPUT').value.toUpperCase().trim();
-
             if(!fraseAttuale) return;
-
             document.getElementById('START').style.display = 'none';
-
             document.getElementById('GAME').style.display = 'flex';
-
             costruisciBoard();
-
             costruisciTastiera();
-
             setTimeout(ridimensionaBoard, 100);
-
         }
-
-
 
         function costruisciBoard() {
-
             const b = document.getElementById('BOARD');
-
             b.innerHTML = '';
-
             fraseAttuale.split(' ').forEach(parola => {
-
                 const group = document.createElement('div');
-
                 group.className = 'word-group';
-
                 for(let l of parola) {
-
                     const s = document.createElement('span');
-
                     if((l >= 'A' && l <= 'Z') || mapAccenti[l]){
-
                         s.className = 'C';
-
                         s.setAttribute('data-l', mapAccenti[l] || l);
-
                         s.innerHTML = l;
-
                     } else {
-
                         const spec = document.createElement('span');
-
                         spec.style.cssText = "color:white; font-size:1.8em; margin: 0 4px; line-height:1.2";
-
                         spec.innerHTML = l;
-
                         group.appendChild(spec);
-
                         continue;
-
                     }
-
                     group.appendChild(s);
-
                 }
-
                 b.appendChild(group);
-
             });
-
         }
-
-
 
         function ridimensionaBoard() {
-
             const board = document.getElementById('BOARD');
-
             const cont = document.getElementById('CONTENITORE_BOARD');
-
             if (!board || !cont) return;
-
             let availableW = cont.clientWidth - 20;
-
             let availableH = cont.clientHeight - 20;
-
             let size = 110; 
-
             const root = document.documentElement;
-
             function fits() {
-
                 root.style.setProperty('--box-dim', size + 'px');
-
                 root.style.setProperty('--font-dim', (size * 0.7) + 'px');
-
                 return board.scrollWidth <= availableW && board.scrollHeight <= availableH;
-
             }
-
             while (size > 12 && !fits()) { size -= 1; }
-
         }
-
-
 
         function costruisciTastiera() {
-
             const k = document.getElementById('KEYS');
-
             k.innerHTML = '';
-
             'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').forEach(let => {
-
                 const btn = document.createElement('button');
-
                 btn.innerHTML = let;
-
                 btn.onclick = () => {
-
                     btn.disabled = true;
-
                     btn.style.opacity = "0.1";
-
                     const n2 = getComputedStyle(document.documentElement).getPropertyValue('--neon-2');
-
                     document.querySelectorAll(`.C[data-l="${let}"]`).forEach(bx => {
-
                         bx.style.color = 'black';
-
                         bx.style.borderColor = n2;
-
                         bx.style.boxShadow = `0 0 10px ${n2}`;
-
                     });
-
                 };
-
                 k.appendChild(btn);
-
             });
-
         }
-
-
 
         function toggleKeyboard() {
-
             const k = document.getElementById('KEYS');
-
             const btn = document.getElementById('BTN_KB');
-
             k.style.display = (k.style.display === 'none') ? 'flex' : 'none';
-
             btn.innerHTML = (k.style.display === 'none') ? "TASTIERA ON" : "TASTIERA OFF";
-
             setTimeout(ridimensionaBoard, 50);
-
         }
-
-
 
         function toggleFS() {
-
-            if (!document.fullscreenElement) {
-
-                document.documentElement.requestFullscreen().catch(e => console.log(e));
-
-            } else {
-
-                document.exitFullscreen();
-
-            }
-
+            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(e => console.log(e));
+            else document.exitFullscreen();
             setTimeout(ridimensionaBoard, 300);
-
         }
-
-
 
         function rivelaFrase() {
-
             const n2 = getComputedStyle(document.documentElement).getPropertyValue('--neon-2');
-
             document.querySelectorAll('.C').forEach(x => {
-
                 x.style.color = 'black';
-
                 x.style.borderColor = n2;
-
             });
-
         }
 
-
+        function nascondiExtra() {
+            document.getElementById('THEME_UI').style.display = 'none';
+            document.getElementById('APK_UI').style.display = 'none';
+        }
+        function mostraExtra() {
+            document.getElementById('THEME_UI').style.display = 'block';
+            document.getElementById('APK_UI').style.display = 'block';
+        }
 
         window.addEventListener('resize', () => { setTimeout(ridimensionaBoard, 100); });
-
-
-
         document.addEventListener('keydown', (e) => {
-
             const k = e.key.toUpperCase();
-
-            document.querySelectorAll('#KEYS button').forEach(b => {
-
-                if(b.innerHTML === k && !b.disabled) b.click();
-
-            });
-
+            document.querySelectorAll('#KEYS button').forEach(b => { if(b.innerHTML === k && !b.disabled) b.click(); });
         });
-
     </script>
-
 </body>
-
 </html>
-
-
-
